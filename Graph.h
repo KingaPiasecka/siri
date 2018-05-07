@@ -19,7 +19,7 @@ public:
     static Graph fromFile(const string& str, const char delimiter=',');
     static Graph fromFile(ifstream&& istream, const char delimiter=',');
 
-    long getSize() const { return weights.size(); }
+    int getSize() const { return weights.size(); }
     const decltype(weights) getWeights() const { return weights; }
 
     const decltype(nodes) getNodes() const { return nodes; }

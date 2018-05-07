@@ -1,8 +1,7 @@
 #include <iostream>
 #include <mpi.h>
 
-#include "map.h"
-#include "debug.h"
+#include "Graph.h"
 #include "dijkstra.h"
 
 int main(int argc, char* argv[]) {
@@ -21,9 +20,9 @@ int main(int argc, char* argv[]) {
     std::cout << "Hello from " << mpiNodeId << std::endl;
 
     if (mpiNodeId == mpiRootId) {
-        Map m = Map::fromFile(argv[1]);
+        Graph m = Graph::fromFile(argv[1]);
         
-        auto n = m.getNodesNames();
+        auto n = m.getNodes();
         auto initialNodeName = *n.begin();
         auto goalNodeName = *(n.end()-2);
 

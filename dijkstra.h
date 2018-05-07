@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "map.h"
+#include "Graph.h"
 
-void dijkstra(const Map& m, const std::string& initialNodeName, const std::string& goalNodeName, const int mpiNodesCount);
+void dijkstra(const Graph& m, const std::string& initialNodeName, const std::string& goalNodeName, const int mpiNodesCount);
 
 void dijkstraWorker(int mpiNodeId, int mpiWorkerNodes);
