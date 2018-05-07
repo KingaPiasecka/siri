@@ -2,7 +2,6 @@
 #include <mpi.h>
 
 #include "map.h"
-#include "debug.h"
 #include "dijkstra.h"
 
 int main(int argc, char* argv[]) {
