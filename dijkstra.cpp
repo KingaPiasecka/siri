@@ -90,8 +90,7 @@ void dijkstra(const Map& m, const std::string& initialNodeName, const std::strin
                 const auto toNode = nodeRanges.second;
                 MPI_Recv(&prevNodes[fromNode], toNode - fromNode + 1, MPI_INT, mpiNodeId, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             }
-            LOGv(distances);
-            LOGv(prevNodes);
+
 
             std::vector<int> stack;
             while(currentNode != initialNode) {
@@ -101,7 +100,7 @@ void dijkstra(const Map& m, const std::string& initialNodeName, const std::strin
                 currentNode = prev;
             }
 
-            LOGv(stack);
+
             std::cout << "Total cost: " << distances[goalNode] << std::endl;
             std::cout << "Path: " << nodesNames[currentNode];
 
@@ -114,7 +113,7 @@ void dijkstra(const Map& m, const std::string& initialNodeName, const std::strin
             break;
         }
 
-        LOG("Visited " << currentNode);
+		std::cout << "Visited " << currentNode;
         visited.insert(currentNode);
 
         auto minCost = std::numeric_limits<int>::max(); 
@@ -130,7 +129,7 @@ void dijkstra(const Map& m, const std::string& initialNodeName, const std::strin
         }
         
         currentNode = nextNode;
-        LOG("Next currentNode = " << currentNode);
+		std::cout << "Next currentNode = " << currentNode;
 
         if (currentNode == -1) {
             std::cout << "Path not found" << std::endl;
@@ -183,7 +182,7 @@ void dijkstraWorker(int mpiNodeId, int mpiNodesCount) {
 
         for (auto node=fromNode; node<=toNode; ++node) {
             if (isVisited(node)) {
-                LOG("Node " << node << " already visited - skipping.");
+				std::cout << "Node " << node << " already visited - skipping.";
                 continue;
             }
 
@@ -191,11 +190,11 @@ void dijkstraWorker(int mpiNodeId, int mpiNodesCount) {
                 auto nodeDistance = weights[currentNode][node];
                 auto totalCostToNode = distances[currentNode] + nodeDistance;
 
-                LOG("Node " << node << " is neighbour of " << currentNode << " (distance: " << nodeDistance << ", totalCostToNode: " << totalCostToNode << ")");
+				std::cout << "Node " << node << " is neighbour of " << currentNode << " (distance: " << nodeDistance << ", totalCostToNode: " << totalCostToNode << ")";
                 if (totalCostToNode < distances[node]) {
                     distances[node] = totalCostToNode;
                     prevNodes[node] = currentNode;
-                    LOG("New total cost is less than the old, replacing");
+					std::cout << "New total cost is less than the old, replacing";
                 }
             }
         }
