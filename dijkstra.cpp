@@ -6,7 +6,7 @@
 #include <limits>
 #include <mpi.h>
 
-#include "dijkstra.h"
+
 #include "map.h"
 
 const int INF = 2147483647;
