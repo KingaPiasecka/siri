@@ -6,7 +6,7 @@
 #include <limits>
 #include <mpi.h>
 
-#include "map.h"
+#include "Graph.h"
 
 const int MAX_INT = 2147483647;
 const int rootID = 0;
@@ -30,10 +30,10 @@ std::pair<int, int> getMpiWorkerNodeRanges(int nodesCount, int mpiNodesCount, in
     return std::pair<int, int>(fromNode, toNode);
 }
 
-void dijkstra(const Map& m, const std::string& initialNodeName, const std::string& goalNodeName, const int mpiNodesCount) {
+void dijkstra(const Graph& m, const std::string& initialNodeName, const std::string& goalNodeName, const int mpiNodesCount) {
     const auto& weights = m.getWeights();
-    const auto& nodesNames = m.getNodesNames();
-    auto nodesCount = nodesNames.size();
+    const auto& nodes = m.getNodes();
+    auto nodesCount = nodes.size();
 
     std::vector<int> distances(nodesCount);
     std::vector<int> prevNodes(nodesCount);
@@ -45,7 +45,7 @@ void dijkstra(const Map& m, const std::string& initialNodeName, const std::strin
         prevNodes[node] = MAX_INT;
     }
 
-    auto indexOf = [&] (auto nodeName) { return std::find(nodesNames.begin(), nodesNames.end(), nodeName) - nodesNames.begin(); };
+    auto indexOf = [&] (auto nodeName) { return std::find(nodes.begin(), nodes.end(), nodeName) - nodes.begin(); };
     auto isVisited = [&] (auto node) { return visited.find(node) != visited.end(); };
     auto isNeighbour = [&] (auto currentNode, auto node) { return weights[currentNode][node] != -1; };
 
@@ -100,10 +100,10 @@ void dijkstra(const Map& m, const std::string& initialNodeName, const std::strin
 
 
             std::cout << "Total cost: " << distances[goalNode] << std::endl;
-            std::cout << "Path: " << nodesNames[currentNode];
+            std::cout << "Path: " << nodes[currentNode];
 
             for(auto it=stack.rbegin(); it != stack.rend(); ++it) {
-                auto nextNodeName = nodesNames[*it];
+                auto nextNodeName = nodes[*it];
                 std::cout << " -> " << nextNodeName;
             }
             std::cout << std::endl;

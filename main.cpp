@@ -2,6 +2,7 @@
 #include <mpi.h>
 
 #include "map.h"
+#include "debug.h"
 #include "dijkstra.cpp"
 
 int main(int argc, char* argv[]) {
@@ -23,7 +24,7 @@ int main(int argc, char* argv[]) {
     if (mpiNodeId == rootID) {
         Map m = Map::fromFile(argv[1]);
         
-        auto n = m.getNodesNames();
+        auto n = m.getNodes();
         auto initialNodeName = *n.begin();
         auto goalNodeName = *(n.end()-2);
 
