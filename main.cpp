@@ -10,8 +10,9 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    int mpiNodesCount, mpiNodeId;
-    const int mpiRootId = 0;
+	int mpiNodesCount;
+	int mpiNodeId;
+    const int rootID = 0;
 
 
     MPI_Init(&argc, &argv);
@@ -19,7 +20,7 @@ int main(int argc, char* argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiNodeId);
     std::cout << "Hello from " << mpiNodeId << std::endl;
 
-    if (mpiNodeId == mpiRootId) {
+    if (mpiNodeId == rootID) {
         Map m = Map::fromFile(argv[1]);
         
         auto n = m.getNodesNames();

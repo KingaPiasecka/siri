@@ -6,11 +6,10 @@
 #include <limits>
 #include <mpi.h>
 
-
 #include "map.h"
 
-const int INF = 2147483647;
-const int mpiRootId = 0;
+const int MAX_INT = 2147483647;
+const int rootID = 0;
 
 std::pair<int, int> getMpiWorkerNodeRanges(int nodesCount, int mpiNodesCount, int mpiNodeId) {
     mpiNodesCount -= 1; // counting only worker nodes
@@ -42,8 +41,8 @@ void dijkstra(const Map& m, const std::string& initialNodeName, const std::strin
     std::set<int> visited;
 
     for(auto node = 0u; node < nodesCount; ++node) {
-        distances[node] = INF;
-        prevNodes[node] = INF;
+        distances[node] = MAX_INT;
+        prevNodes[node] = MAX_INT;
     }
 
     auto indexOf = [&] (auto nodeName) { return std::find(nodesNames.begin(), nodesNames.end(), nodeName) - nodesNames.begin(); };
@@ -59,17 +58,17 @@ void dijkstra(const Map& m, const std::string& initialNodeName, const std::strin
 
     std::cout << "Sending initial data to workers..." << std::endl;
     int data[3] = {nodesCount, initialNode, goalNode};
-    MPI_Bcast(&data, 3, MPI_INT, mpiRootId, MPI_COMM_WORLD);
+    MPI_Bcast(&data, 3, MPI_INT, rootID, MPI_COMM_WORLD);
 
     for(auto i=0u; i<nodesCount; ++i)
-        MPI_Bcast((int*)&weights[i][0], nodesCount, MPI_INT, mpiRootId, MPI_COMM_WORLD);
+        MPI_Bcast((int*)&weights[i][0], nodesCount, MPI_INT, rootID, MPI_COMM_WORLD);
 
     distances[initialNode] = 0;
 
     while (true) {
         std::cout << "Sending currNode=" << currentNode << " distance=" << distances[currentNode] << std::endl;
         int data[2] = {currentNode, distances[currentNode]};
-        MPI_Bcast(&data, 2, MPI_INT, mpiRootId, MPI_COMM_WORLD);
+        MPI_Bcast(&data, 2, MPI_INT, rootID, MPI_COMM_WORLD);
 
         //Get distances calculated by workers
         for(auto mpiNodeId = 1; mpiNodeId < mpiNodesCount; ++mpiNodeId) {
@@ -149,8 +148,8 @@ void dijkstraWorker(int mpiNodeId, int mpiNodesCount) {
     std::cout << "mpiID=" << mpiNodeId << " bcast recv nodesCount=" << nodesCount << " initialNode=" << initialNode << " goalNode=" << goalNode << std::endl;
 
     std::vector<std::vector<int>> weights(nodesCount);
-    std::vector<int> distances(nodesCount, INF);
-    std::vector<int> prevNodes(nodesCount, INF);
+    std::vector<int> distances(nodesCount, MAX_INT);
+    std::vector<int> prevNodes(nodesCount, MAX_INT);
     std::set<int> visited;
 
     auto isVisited = [&] (auto node) { return visited.find(node) != visited.end(); };
@@ -158,7 +157,7 @@ void dijkstraWorker(int mpiNodeId, int mpiNodesCount) {
 
     for(auto i=0u; i<nodesCount; ++i) {
         weights[i].resize(nodesCount);
-        MPI_Bcast((int*)&weights[i][0], nodesCount, MPI_INT, mpiRootId, MPI_COMM_WORLD);
+        MPI_Bcast((int*)&weights[i][0], nodesCount, MPI_INT, rootID, MPI_COMM_WORLD);
     }
 
     const auto nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
@@ -169,7 +168,7 @@ void dijkstraWorker(int mpiNodeId, int mpiNodesCount) {
     // real work
     while (1) {
         std::cout << "~~~~" << std::endl;
-        MPI_Bcast(&data, 2, MPI_INT, mpiRootId, MPI_COMM_WORLD);
+        MPI_Bcast(&data, 2, MPI_INT, rootID, MPI_COMM_WORLD);
 
         int currentNode = data[0];
         distances[currentNode] = data[1];
@@ -199,11 +198,11 @@ void dijkstraWorker(int mpiNodeId, int mpiNodesCount) {
         }
 
         visited.insert(currentNode);
-        MPI_Send(&distances[fromNode], toNode - fromNode + 1, MPI_INT, mpiRootId, 0, MPI_COMM_WORLD);
+        MPI_Send(&distances[fromNode], toNode - fromNode + 1, MPI_INT, rootID, 0, MPI_COMM_WORLD);
 
         // goal node found
         if (currentNode == goalNode) {
-            MPI_Send(&prevNodes[fromNode], toNode - fromNode + 1, MPI_INT, mpiRootId, 0, MPI_COMM_WORLD);
+            MPI_Send(&prevNodes[fromNode], toNode - fromNode + 1, MPI_INT, rootID, 0, MPI_COMM_WORLD);
             return;
         }
         std::cout << "======" << std::endl;
