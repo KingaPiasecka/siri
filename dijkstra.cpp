@@ -4,10 +4,8 @@
 #include <algorithm>
 #include <stdexcept>
 #include <limits>
-
 #include <mpi.h>
 
-#include "debug.h"
 #include "dijkstra.h"
 #include "map.h"
 
