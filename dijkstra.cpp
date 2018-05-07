@@ -9,7 +9,7 @@
 #include "dijkstra.h"
 #include "map.h"
 
-static const auto INF = std::numeric_limits<int>::max();
+const int INF = 2147483647;
 const int mpiRootId = 0;
 
 std::pair<int, int> getMpiWorkerNodeRanges(int nodesCount, int mpiNodesCount, int mpiNodeId) {
@@ -40,7 +40,8 @@ void dijkstra(const Map& m, const std::string& initialNodeName, const std::strin
     std::vector<int> prevNodes(nodesCount);
 
     std::set<int> visited;
-    for(auto node=0u; node<nodesCount; ++node) {
+
+    for(auto node = 0u; node < nodesCount; ++node) {
         distances[node] = INF;
         prevNodes[node] = INF;
     }
@@ -65,13 +66,13 @@ void dijkstra(const Map& m, const std::string& initialNodeName, const std::strin
 
     distances[initialNode] = 0;
 
-    while (1) {
+    while (true) {
         std::cout << "Sending currNode=" << currentNode << " distance=" << distances[currentNode] << std::endl;
         int data[2] = {currentNode, distances[currentNode]};
         MPI_Bcast(&data, 2, MPI_INT, mpiRootId, MPI_COMM_WORLD);
 
-        // receive distances calculated by workers
-        for(auto mpiNodeId=1; mpiNodeId<mpiNodesCount; ++mpiNodeId) {
+        //Get distances calculated by workers
+        for(auto mpiNodeId = 1; mpiNodeId < mpiNodesCount; ++mpiNodeId) {
             const auto nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
             const auto fromNode = nodeRanges.first;
             const auto toNode = nodeRanges.second;
@@ -117,7 +118,7 @@ void dijkstra(const Map& m, const std::string& initialNodeName, const std::strin
         auto minCost = std::numeric_limits<int>::max(); 
         auto nextNode = -1;
 
-        for(auto node=0u; node<nodesCount; ++node) {
+        for(auto node = 0u; node<nodesCount; ++node) {
             auto totalCost = distances[node];
 
             if (!isVisited(node) && totalCost < minCost) {

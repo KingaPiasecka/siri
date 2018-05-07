@@ -2,7 +2,7 @@
 #include <mpi.h>
 
 #include "map.h"
-#include "dijkstra.h"
+#include "dijkstra.cpp"
 
 int main(int argc, char* argv[]) {
     if (argc == 1) {
