@@ -2,7 +2,6 @@
 #include <mpi.h>
 
 #include "Graph.h"
-#include "debug.h"
 #include "dijkstra.cpp"
 
 int main(int argc, char* argv[]) {
