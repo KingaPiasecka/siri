@@ -7,7 +7,6 @@
 #include <sstream>
 
 #include "map.h"
-#include "debug.h"
 
 Map::Map(int verticesCount) : weights(verticesCount) {
     for(int i=0; i<verticesCount; ++i) {
