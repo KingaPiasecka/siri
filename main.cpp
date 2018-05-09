@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
         
         auto n = m.getNodes();
         auto initialNodeName = *n.begin();
-        auto goalNodeName = *(n.end()-2);
+        auto goalNodeName = *(n.end()-1);
 
         std::cout << "Dijkstra search algorithm" << std::endl;
         std::cout << "Starting at node: " << initialNodeName << std::endl;
