@@ -8,63 +8,86 @@
 
 #include "Graph.h"
 
-Graph::Graph(int verticesCount) : weights(verticesCount) {
-    for(int i=0; i<verticesCount; ++i) {
-        weights[i].resize(verticesCount);
+Graph::Graph(){}
+
+Graph::Graph(int numberOfVertices) : weights(numberOfVertices) {
+    for(int i=0; i<numberOfVertices; ++i) {
+        weights[i].resize(numberOfVertices);
     }
 }
 
-Graph Graph::fromFile(const string& str, const char delimiter) {
-    return fromFile(ifstream(str.c_str()), delimiter);
+Graph* Graph::mapGraphFromFile(const string& fileName) {
+	string header;
+	string line;
+	
+	std::ifstream ifs (fileName.c_str());
+	
+	getline(ifs, header);
+	
+	try {
+		int numberOfVertices = stoi(header);
+		
+		if(Graph::validateUnsignedInt(numberOfVertices)) {
+			
+			Graph *graph = new Graph(numberOfVertices);
+			
+			for(int i=0; i<numberOfVertices; ++i) {
+				getline(ifs, line); 
+				stringstream linestream(line);
+				
+				for(int j=0; j<numberOfVertices; ++j) {
+					string numstr;
+					getline(linestream, numstr, Graph::delimiter);
+					if (numstr.find(Graph::noWeight) != string::npos) {
+						graph->weights[i][j] = Graph::noEdge;
+					} else {
+						graph->weights[i][j] = stoi(numstr);
+					}
+				}
+				
+			}
+			
+			graph->setNodes(numberOfVertices);
+			
+			return graph;
+
+		}
+		
+	} catch(const invalid_argument& ia) {
+		throw runtime_error("Wrong input file format - invalid argument for the number of vertices");
+	} catch(const out_of_range& oor) {
+		throw runtime_error("Wrong input file format - number of vertices out of range");
+	} catch ( ... ) {
+		// everything else
+		throw runtime_error("Something went wrong");
+	}
+
 }
 
-Graph Graph::fromFile(ifstream&& istream, const char delimiter) {
-    string header;
-
-    if (getline(istream, header, ':') && header == "vertices" && getline(istream, header)) {
-        int verticesCount = stoi(header);
-        
-        Graph m(verticesCount);        
-
-        for(auto i=0; i<verticesCount; ++i) {
-            string line;
-            getline(istream, line); 
-
-            stringstream linestream(line);
-            for(auto j=0; j<verticesCount; ++j) {
-                string numstr;
-                getline(linestream, numstr, delimiter);
-                
-                // the `i` node has no edge to `j`
-                if (numstr.find("-") != string::npos)
-                    m.weights[i][j] = NO_EDGE;
-                    
-                else
-                    m.weights[i][j] = stoi(numstr);
-            }
-        }
-
-        for(auto i=0; i<verticesCount; ++i) {
-            char nodeName[2] = {0};
-            nodeName[0] = (char) ( (int)('A') + i );
-            cout << "Adding node: " << nodeName << endl;
-            m.nodes.push_back(string(nodeName));
-        }
-
-        return m;
-    }
-
-    throw runtime_error("Wrong Graph file format");
+void Graph::setNodes(int numberOfVertices) {
+	int A = (int)'A';
+	for(int i=0; i<numberOfVertices; ++i) {
+		int node = A + i;
+		cout << "Adding node: " << (char)node << endl;
+		this->nodes.push_back(string(1,(char)node));
+	}
 }
 
-void Graph::printWeights() const {
-    for(auto i=0u; i<getSize(); ++i) {
-        for(auto j=0u; j<getSize(); ++j)
-            if (weights[i][j] != -1)
+void Graph::printAdjacencyMatrix() const {
+	int numberOfEdges = getNumberOfEdges();
+	
+    for(int i=0; i<numberOfEdges; ++i) {
+        for(int j=0; j<numberOfEdges; ++j)
+            if (weights[i][j] != Graph::noEdge) {
                 cout << setw(4) << weights[i][j] << " ";
-            else
+			} else {
                 cout << setw(4) << "-" << " ";
+			}
 
         cout << endl;
     }
+}
+
+bool Graph::validateUnsignedInt(const int number) {
+	return number > 0;
 }
