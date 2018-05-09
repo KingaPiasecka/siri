@@ -30,9 +30,9 @@ std::pair<int, int> getMpiWorkerNodeRanges(int nodesCount, int mpiNodesCount, in
     return std::pair<int, int>(fromNode, toNode);
 }
 
-void dijkstra(const Graph& m, const std::string& initialNodeName, const std::string& goalNodeName, const int mpiNodesCount) {
-    const auto& weights = m.getWeights();
-    const auto& nodes = m.getNodes();
+void dijkstra(const Graph *graph, const std::string& initialNodeName, const std::string& goalNodeName, const int mpiNodesCount) {
+    const auto& weights = graph->getWeights();
+    const auto& nodes = graph->getNodes();
     auto nodesCount = nodes.size();
 
     std::vector<int> distances(nodesCount);

@@ -21,20 +21,20 @@ int main(int argc, char* argv[]) {
     std::cout << "Hello from " << mpiNodeId << std::endl;
 
     if (mpiNodeId == rootID) {
-        Graph m = Graph::fromFile(argv[1]);
+        Graph *graph = Graph::mapGraphFromFile(argv[1]);
         
-        auto n = m.getNodes();
+        auto n = graph->getNodes();
         auto initialNodeName = *n.begin();
-        auto goalNodeName = *(n.end()-2);
+        auto goalNodeName = *(n.end()-1);
 
         std::cout << "Dijkstra search algorithm" << std::endl;
         std::cout << "Starting at node: " << initialNodeName << std::endl;
         std::cout << "Ending at node: " << goalNodeName << std::endl;
         std::cout << "Consecutive nodes (A, B, ...) weights: " << std::endl;
-        m.printWeights();
+        graph->printAdjacencyMatrix();
 
         std::cout << "Searching..." << std::endl;
-        dijkstra(m, initialNodeName, goalNodeName, mpiNodesCount);
+        dijkstra(graph, initialNodeName, goalNodeName, mpiNodesCount);
     }
     else
         dijkstraWorker(mpiNodeId, mpiNodesCount);
