@@ -13,10 +13,9 @@ const int rootID = 0;
 
 std::pair<int, int> getMpiWorkerNodeRanges(int nodesCount, int mpiNodesCount, int mpiNodeId) {
     mpiNodesCount -= 1; // counting only worker nodes
-    auto fromNode = (nodesCount / mpiNodesCount) * (mpiNodeId - 1);
-    auto toNode = (nodesCount / mpiNodesCount) * mpiNodeId - 1;
-
-    auto restNodes = nodesCount % mpiNodesCount;
+    int fromNode = (nodesCount / mpiNodesCount) * (mpiNodeId - 1);
+    int toNode = (nodesCount / mpiNodesCount) * mpiNodeId - 1;
+    int restNodes = nodesCount % mpiNodesCount;
 
     if (mpiNodeId - 1 < restNodes) {
         fromNode += mpiNodeId - 1;
@@ -75,6 +74,7 @@ void dijkstra(const Graph& m, const std::string& initialNodeName, const std::str
             const auto nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
             const auto fromNode = nodeRanges.first;
             const auto toNode = nodeRanges.second;
+
             MPI_Recv(&distances[fromNode], toNode - fromNode + 1, MPI_INT, mpiNodeId, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             std::cout << "Recv from " << mpiNodeId << std::endl;
         }
