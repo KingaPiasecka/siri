@@ -71,7 +71,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
 
         //Get distances calculated by workers
         for(auto mpiNodeId = 1; mpiNodeId < mpiNodesCount; ++mpiNodeId) {
-            const auto nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
+            const std::pair<int, int> nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
             const auto fromNode = nodeRanges.first;
             const auto toNode = nodeRanges.second;
 
@@ -83,7 +83,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
         if (currentNode == goalNode) {
             std::cout << "Goal node found" << std::endl;
             for(auto mpiNodeId=1; mpiNodeId<mpiNodesCount; ++mpiNodeId) {
-                const auto nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
+                const std::pair<int, int> nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
                 const auto fromNode = nodeRanges.first;
                 const auto toNode = nodeRanges.second;
                 MPI_Recv(&prevNodes[fromNode], toNode - fromNode + 1, MPI_INT, mpiNodeId, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -160,7 +160,7 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
         MPI_Bcast((int*)&weights[i][0], nodesCount, MPI_INT, rootID, MPI_COMM_WORLD);
     }
 
-    const auto nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
+    const std::pair<int, int> nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
     const auto fromNode = nodeRanges.first;
     const auto toNode = nodeRanges.second;
     std::cout << "mpiID=" << mpiNodeId << " from=" << fromNode << " to=" << toNode << std::endl;

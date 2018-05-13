@@ -5,10 +5,12 @@
 #include "dijkstra.cpp"
 
 int main(int argc, char* argv[]) {
-    if (argc == 1) {
-        std::cout << "Usage: " << argv[0] << " <testcase file>" << std::endl;
-        return -1;
-    }
+/*
+if (argc == 1) {
+std::cout << "Usage: " << argv[0] << " <testcase file>" << std::endl;
+return -1;
+}
+*/
 
 	int mpiNodesCount;
 	int mpiNodeId;
@@ -19,6 +21,7 @@ int main(int argc, char* argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &mpiNodesCount);
     MPI_Comm_rank(MPI_COMM_WORLD, &mpiNodeId);
     std::cout << "Hello from " << mpiNodeId << std::endl;
+	std::cout << "mpiNodesCount " << mpiNodesCount << std::endl;
 
     if (mpiNodeId == rootID) {
         Graph *graph = Graph::mapGraphFromFile(argv[1]);
