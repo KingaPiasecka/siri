@@ -72,6 +72,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
         std::cout << "Sending currNode=" << currentNode << " distance=" << distances[currentNode] << std::endl;
         int data[2] = {currentNode, distances[currentNode]};
         MPI_Bcast(&data, 2, MPI_INT, rootID, MPI_COMM_WORLD);
+		const int fromNode = -1, toNode = -1;
 
         //Get distances calculated by workers
         for(int mpiNodeId = 1; mpiNodeId < mpiNodesCount; ++mpiNodeId) {
@@ -85,9 +86,9 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
         // test for goal
         if (currentNode == goalNode) {
             for(int mpiNodeId = 1; mpiNodeId < mpiNodesCount; ++mpiNodeId) {
-                const std::pair<int, int> nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
+               /* const std::pair<int, int> nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
                 const int fromNode = nodeRanges.first;
-                const int toNode = nodeRanges.second;
+                const int toNode = nodeRanges.second; */
                 MPI_Recv(&prevNodes[fromNode], toNode - fromNode + 1, MPI_INT, mpiNodeId, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             }
 
