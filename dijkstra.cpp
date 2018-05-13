@@ -29,11 +29,6 @@ std::pair<int, int> getMpiWorkerNodeRanges(int nodesCount, int mpiNodesCount, in
     return std::pair<int, int>(fromNode, toNode);
 }
 
-void initializeVectorIntByMaxValue(vector<int>& vect) {
-	for (int i = 0; i < vect.size(); ++i) {
-		vect[i] = MAX_INT;
-	}
-}
 
 int getNodeIndex(vector<string> nodes, string nodeName) {
 	return std::find(nodes.begin(), nodes.end(), nodeName) - nodes.begin();
@@ -52,19 +47,11 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
     const vector<string> nodes = graph->getNodes();
     const int nodesCount = nodes.size();
 
-    std::vector<int> distances(nodesCount);
-	initializeVectorIntByMaxValue(distances);
-
-    std::vector<int> prevNodes(nodesCount);
-	initializeVectorIntByMaxValue(prevNodes);
+	std::vector<int> distances(nodesCount, MAX_INT);
+	std::vector<int> prevNodes(nodesCount, MAX_INT);
 
     std::set<int> visited;
 
-/*    for(int node = 0; node < nodesCount; ++node) {
-        distances[node] = MAX_INT;
-        prevNodes[node] = MAX_INT;
-    }
-	*/
 
     auto initialNode = static_cast<int>(getNodeIndex(nodes, initialNodeName));
     auto currentNode = initialNode;
