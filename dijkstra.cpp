@@ -75,7 +75,6 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
             const int toNode = nodeRanges.second;
 
             MPI_Recv(&distances[fromNode], toNode - fromNode + 1, MPI_INT, mpiNodeId, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            std::cout << "Recv from " << mpiNodeId << std::endl;
         }
 
         // test for goal
@@ -110,7 +109,6 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
             break;
         }
 
-		std::cout << "Visited " << currentNode;
         visited.insert(currentNode);
 
         auto minCost = MAX_INT; 
@@ -126,12 +124,6 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
         }
         
         currentNode = nextNode;
-		std::cout << "Next currentNode = " << currentNode;
-
-        if (currentNode == -1) {
-            std::cout << "Path not found" << std::endl;
-            return;
-        }
     }
 }
 
@@ -144,9 +136,7 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
     int initialNode = data[1];
     int goalNode = data[2];
 
-    std::cout << "mpiID=" << mpiNodeId << " bcast recv nodesCount=" << nodesCount << " initialNode=" << initialNode << " goalNode=" << goalNode << std::endl;
-
-    std::vector<std::vector<int>> weights(nodesCount);
+	intVectors weights(nodesCount);
     std::vector<int> distances(nodesCount, MAX_INT);
     std::vector<int> prevNodes(nodesCount, MAX_INT);
     std::set<int> visited;
@@ -179,7 +169,6 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
 
         for (auto node=fromNode; node<=toNode; ++node) {
             if (isVisited(node)) {
-				std::cout << "Node " << node << " already visited - skipping.";
                 continue;
             }
 
