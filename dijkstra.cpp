@@ -37,6 +37,10 @@ bool isNodeVisited(std::set<int> visited, int node) {
 	return visited.find(node) != visited.end();
 }
 
+bool isCurrentNodeNeighbour(intVectors weights, int currentNode, int node) { 
+	return weights[currentNode][node] != -1; 
+}
+
 void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const std::string& goalNodeName, const int mpiNodesCount) {
     const intVectors weights = graph->getWeights();
     const vector<string> nodes = graph->getNodes();
@@ -54,7 +58,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
 
     //auto indexOf = [&] (auto nodeName) { return std::find(nodes.begin(), nodes.end(), nodeName) - nodes.begin(); };
     //auto isVisited = [&] (auto node) { return visited.find(node) != visited.end(); };
-    auto isNeighbour = [&] (auto currentNode, auto node) { return weights[currentNode][node] != -1; };
+    //auto isNeighbour = [&] (auto currentNode, auto node) { return weights[currentNode][node] != -1; };
 
     auto initialNode = static_cast<int>(getNodeIndex(nodes, initialNodeName));
     auto currentNode = initialNode;
@@ -149,7 +153,7 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
     std::set<int> visited;
 
     //auto isVisited = [&] (auto node) { return visited.find(node) != visited.end(); };
-    auto isNeighbour = [&] (auto currentNode, auto node) { return weights[currentNode][node] != -1; };
+    //auto isNeighbour = [&] (auto currentNode, auto node) { return weights[currentNode][node] != -1; };
 
     for(auto i=0u; i<nodesCount; ++i) {
         weights[i].resize(nodesCount);
@@ -178,7 +182,7 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
                 continue;
             }
 
-            if (isNeighbour(currentNode, node)) {
+            if (isCurrentNodeNeighbour(weights, currentNode, node)) {
                 auto nodeDistance = weights[currentNode][node];
                 auto totalCostToNode = distances[currentNode] + nodeDistance;
 
