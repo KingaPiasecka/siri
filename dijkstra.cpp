@@ -29,6 +29,11 @@ std::pair<int, int> getMpiWorkerNodeRanges(int nodesCount, int mpiNodesCount, in
     return std::pair<int, int>(fromNode, toNode);
 }
 
+int getNodeIndex(vector<string> nodes, string nodeName) {
+	return std::find(nodes.begin(), nodes.end(), nodeName) - nodes.begin();
+}
+
+
 void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const std::string& goalNodeName, const int mpiNodesCount) {
     const intVectors weights = graph->getWeights();
     const vector<string> nodes = graph->getNodes();
@@ -44,13 +49,13 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
         prevNodes[node] = MAX_INT;
     }
 
-    auto indexOf = [&] (auto nodeName) { return std::find(nodes.begin(), nodes.end(), nodeName) - nodes.begin(); };
+    //auto indexOf = [&] (auto nodeName) { return std::find(nodes.begin(), nodes.end(), nodeName) - nodes.begin(); };
     auto isVisited = [&] (auto node) { return visited.find(node) != visited.end(); };
     auto isNeighbour = [&] (auto currentNode, auto node) { return weights[currentNode][node] != -1; };
 
-    auto initialNode = static_cast<int>(indexOf(initialNodeName));
+    auto initialNode = static_cast<int>(getNodeIndex(nodes, initialNodeName));
     auto currentNode = initialNode;
-    auto goalNode = indexOf(goalNodeName);
+    auto goalNode = getNodeIndex(nodes, goalNodeName);
 
     int workerNodes = mpiNodesCount - 1;
 
@@ -79,7 +84,6 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
 
         // test for goal
         if (currentNode == goalNode) {
-            std::cout << "Goal node found" << std::endl;
             for(auto mpiNodeId=1; mpiNodeId<mpiNodesCount; ++mpiNodeId) {
                 const std::pair<int, int> nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
                 const auto fromNode = nodeRanges.first;
@@ -156,7 +160,6 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
 
     // real work
     while (1) {
-        std::cout << "~~~~" << std::endl;
         MPI_Bcast(&data, 2, MPI_INT, rootID, MPI_COMM_WORLD);
 
         int currentNode = data[0];
@@ -193,6 +196,5 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
             MPI_Send(&prevNodes[fromNode], toNode - fromNode + 1, MPI_INT, rootID, 0, MPI_COMM_WORLD);
             return;
         }
-        std::cout << "======" << std::endl;
     }
 }
