@@ -34,10 +34,10 @@ int main(int argc, char* argv[]) {
         graph->printAdjacencyMatrix();
 
         std::cout << "Searching..." << std::endl;
-        dijkstra(graph, initialNodeName, goalNodeName, mpiNodesCount);
+        dijkstraMain(graph, initialNodeName, goalNodeName, mpiNodesCount);
     }
     else
-        dijkstraWorker(mpiNodeId, mpiNodesCount);
+        dijkstraNode(mpiNodeId, mpiNodesCount);
 
     MPI_Finalize();
 

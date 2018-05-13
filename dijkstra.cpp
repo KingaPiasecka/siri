@@ -29,9 +29,9 @@ std::pair<int, int> getMpiWorkerNodeRanges(int nodesCount, int mpiNodesCount, in
     return std::pair<int, int>(fromNode, toNode);
 }
 
-void dijkstra(const Graph *graph, const std::string& initialNodeName, const std::string& goalNodeName, const int mpiNodesCount) {
-    const auto& weights = graph->getWeights();
-    const auto& nodes = graph->getNodes();
+void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const std::string& goalNodeName, const int mpiNodesCount) {
+    const intVectors weights = graph->getWeights();
+    const vector<string> nodes = graph->getNodes();
     auto nodesCount = nodes.size();
 
     std::vector<int> distances(nodesCount);
@@ -114,7 +114,7 @@ void dijkstra(const Graph *graph, const std::string& initialNodeName, const std:
 		std::cout << "Visited " << currentNode;
         visited.insert(currentNode);
 
-        auto minCost = std::numeric_limits<int>::max(); 
+        auto minCost = MAX_INT; 
         auto nextNode = -1;
 
         for(auto node = 0u; node<nodesCount; ++node) {
@@ -137,7 +137,7 @@ void dijkstra(const Graph *graph, const std::string& initialNodeName, const std:
 }
 
 
-void dijkstraWorker(int mpiNodeId, int mpiNodesCount) {
+void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
     int data[3];
     MPI_Bcast(&data, 3, MPI_INT, 0, MPI_COMM_WORLD);
 
