@@ -53,7 +53,6 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
     auto goalNode = indexOf(goalNodeName);
 
     int workerNodes = mpiNodesCount - 1;
-    int nodesStep = nodesCount / workerNodes;
 
     std::cout << "Sending initial data to workers..." << std::endl;
     int data[3] = {nodesCount, initialNode, goalNode};
@@ -72,8 +71,8 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
         //Get distances calculated by workers
         for(auto mpiNodeId = 1; mpiNodeId < mpiNodesCount; ++mpiNodeId) {
             const std::pair<int, int> nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
-            const auto fromNode = nodeRanges.first;
-            const auto toNode = nodeRanges.second;
+            const int fromNode = nodeRanges.first;
+            const int toNode = nodeRanges.second;
 
             MPI_Recv(&distances[fromNode], toNode - fromNode + 1, MPI_INT, mpiNodeId, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             std::cout << "Recv from " << mpiNodeId << std::endl;
@@ -94,7 +93,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
             while(currentNode != initialNode) {
                 stack.push_back(currentNode);
 
-                auto prev = prevNodes[currentNode];
+                int prev = prevNodes[currentNode];
                 currentNode = prev;
             }
 
@@ -118,7 +117,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
         auto nextNode = -1;
 
         for(auto node = 0u; node<nodesCount; ++node) {
-            auto totalCost = distances[node];
+            int totalCost = distances[node];
 
             if (!isVisited(node) && totalCost < minCost) {
                 minCost = totalCost;
