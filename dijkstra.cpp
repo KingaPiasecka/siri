@@ -33,6 +33,9 @@ int getNodeIndex(vector<string> nodes, string nodeName) {
 	return std::find(nodes.begin(), nodes.end(), nodeName) - nodes.begin();
 }
 
+bool isNodeVisited(std::set<int> visited, int node) {
+	return visited.find(node) != visited.end();
+}
 
 void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const std::string& goalNodeName, const int mpiNodesCount) {
     const intVectors weights = graph->getWeights();
@@ -50,7 +53,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
     }
 
     //auto indexOf = [&] (auto nodeName) { return std::find(nodes.begin(), nodes.end(), nodeName) - nodes.begin(); };
-    auto isVisited = [&] (auto node) { return visited.find(node) != visited.end(); };
+    //auto isVisited = [&] (auto node) { return visited.find(node) != visited.end(); };
     auto isNeighbour = [&] (auto currentNode, auto node) { return weights[currentNode][node] != -1; };
 
     auto initialNode = static_cast<int>(getNodeIndex(nodes, initialNodeName));
@@ -121,7 +124,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
         for(auto node = 0u; node<nodesCount; ++node) {
             int totalCost = distances[node];
 
-            if (!isVisited(node) && totalCost < minCost) {
+            if (!isNodeVisited(visited, node) && totalCost < minCost) {
                 minCost = totalCost;
                 nextNode = node;
             }
@@ -145,7 +148,7 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
     std::vector<int> prevNodes(nodesCount, MAX_INT);
     std::set<int> visited;
 
-    auto isVisited = [&] (auto node) { return visited.find(node) != visited.end(); };
+    //auto isVisited = [&] (auto node) { return visited.find(node) != visited.end(); };
     auto isNeighbour = [&] (auto currentNode, auto node) { return weights[currentNode][node] != -1; };
 
     for(auto i=0u; i<nodesCount; ++i) {
@@ -171,7 +174,7 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
             return;
 
         for (auto node=fromNode; node<=toNode; ++node) {
-            if (isVisited(node)) {
+            if (isNodeVisited(visited, node)) {
                 continue;
             }
 
