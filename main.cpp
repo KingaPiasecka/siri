@@ -53,7 +53,7 @@ return -1;
 
 	auto duration = duration_cast<milliseconds>(t2 - t1).count();
 
-	cout << duration;
+	cout <<  "czas obliczen: "<< duration<< endl;
 
     return 0;
 }
