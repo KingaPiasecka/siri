@@ -74,7 +74,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
         MPI_Bcast(&data, 2, MPI_INT, rootID, MPI_COMM_WORLD);
 
         //Get distances calculated by workers
-        for(auto mpiNodeId = 1; mpiNodeId < mpiNodesCount; ++mpiNodeId) {
+        for(int mpiNodeId = 1; mpiNodeId < mpiNodesCount; ++mpiNodeId) {
             const std::pair<int, int> nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
             const int fromNode = nodeRanges.first;
             const int toNode = nodeRanges.second;
@@ -84,10 +84,10 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
 
         // test for goal
         if (currentNode == goalNode) {
-            for(auto mpiNodeId=1; mpiNodeId<mpiNodesCount; ++mpiNodeId) {
+            for(int mpiNodeId = 1; mpiNodeId < mpiNodesCount; ++mpiNodeId) {
                 const std::pair<int, int> nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
-                const auto fromNode = nodeRanges.first;
-                const auto toNode = nodeRanges.second;
+                const int fromNode = nodeRanges.first;
+                const int toNode = nodeRanges.second;
                 MPI_Recv(&prevNodes[fromNode], toNode - fromNode + 1, MPI_INT, mpiNodeId, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             }
 
@@ -118,7 +118,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
         auto minCost = MAX_INT; 
         auto nextNode = -1;
 
-        for(auto node = 0u; node<nodesCount; ++node) {
+        for(int node = 0; node < nodesCount; ++node) {
             int totalCost = distances[node];
 
             if (!isNodeVisited(visited, node) && totalCost < minCost) {
@@ -145,14 +145,14 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
     std::vector<int> prevNodes(nodesCount, MAX_INT);
     std::set<int> visited;
 
-    for(auto i=0u; i<nodesCount; ++i) {
+    for(int i = 0; i < nodesCount; ++i) {
         weights[i].resize(nodesCount);
         MPI_Bcast((int*)&weights[i][0], nodesCount, MPI_INT, rootID, MPI_COMM_WORLD);
     }
 
     const std::pair<int, int> nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
-    const auto fromNode = nodeRanges.first;
-    const auto toNode = nodeRanges.second;
+    const int fromNode = nodeRanges.first;
+    const int toNode = nodeRanges.second;
     std::cout << "mpiID=" << mpiNodeId << " from=" << fromNode << " to=" << toNode << std::endl;
 
     // real work
