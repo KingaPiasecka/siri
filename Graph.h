@@ -25,8 +25,6 @@ public:
 	void setNodes(int numberOfVertices);
 	int getNumberOfEdges() const { return weights.size(); }
 	
-    void printAdjacencyMatrix() const;
-	
 	static const int noEdge = -1;
 	static const char delimiter=' ';
 	static const char noWeight = '0';

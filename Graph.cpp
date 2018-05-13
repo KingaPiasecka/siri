@@ -73,21 +73,6 @@ void Graph::setNodes(int numberOfVertices) {
 	}
 }
 
-void Graph::printAdjacencyMatrix() const {
-	int numberOfEdges = getNumberOfEdges();
-	
-    for(int i=0; i<numberOfEdges; ++i) {
-        for(int j=0; j<numberOfEdges; ++j)
-            if (weights[i][j] != Graph::noEdge) {
-                cout << setw(4) << weights[i][j] << " ";
-			} else {
-                cout << setw(4) << "-" << " ";
-			}
-
-        cout << endl;
-    }
-}
-
 bool Graph::validateUnsignedInt(const int number) {
 	return number > 0;
 }
