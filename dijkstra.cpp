@@ -114,7 +114,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
 			std::cout << "Result path: " << nodes[currentNode];
 			std::reverse(stack.begin(), stack.end());
 			for (int node : stack) {
-				std::cout << " -> " << node;
+				std::cout << " -> " << nodes[node];
 			}
 
             std::cout << std::endl;
