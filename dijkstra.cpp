@@ -102,14 +102,9 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
 
 
             std::cout << "Total cost: " << distances[goalNode] << std::endl;
-
-			/*            std::cout << "Path: " << nodes[currentNode];
-
-            for(auto it=stack.rbegin(); it != stack.rend(); ++it) {
-                auto nextNodeName = nodes[*it];
-                std::cout << " -> " << nextNodeName;
-				std::cout << std::endl;
-            }*/
+			for (int d : distances) {
+				std::cout << d;
+			}
 
 			std::cout << "Result path: " << nodes[currentNode];
 			std::reverse(stack.begin(), stack.end());
