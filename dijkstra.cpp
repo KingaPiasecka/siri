@@ -9,7 +9,7 @@
 #include "Graph.h"
 
 const int MAX_INT = 2147483647;
-const int rootID = 0;
+const int rootId = 0;
 
 using namespace std;
 
@@ -62,17 +62,17 @@ void dijkstraMain(const Graph *graph, const string& initialNodeName, const strin
 
     cout << "Sending initial data to workers..." << endl;
     int data[3] = {nodesCount, initialNode, goalNode};
-    MPI_Bcast(&data, 3, MPI_INT, rootID, MPI_COMM_WORLD);
+    MPI_Bcast(&data, 3, MPI_INT, rootId, MPI_COMM_WORLD);
 
     for(int i = 0; i < nodesCount; ++i)
-        MPI_Bcast((int*)&graphWeights[i][0], nodesCount, MPI_INT, rootID, MPI_COMM_WORLD);
+        MPI_Bcast((int*)&graphWeights[i][0], nodesCount, MPI_INT, rootId, MPI_COMM_WORLD);
 
     vectorOfDistancesToEachNode[initialNode] = 0;
 
     while(true) {
         cout << "Sending currNode=" << currentNode << " distance=" << vectorOfDistancesToEachNode[currentNode] << endl;
         int data[2] = {currentNode, vectorOfDistancesToEachNode[currentNode]};
-        MPI_Bcast(&data, 2, MPI_INT, rootID, MPI_COMM_WORLD);
+        MPI_Bcast(&data, 2, MPI_INT, rootId, MPI_COMM_WORLD);
 
         for(int mpiNodeId = 1; mpiNodeId < mpiNodesCount; ++mpiNodeId) {
             const pair<int, int> nodeRanges = calculateNodeRange(nodesCount, mpiNodesCount, mpiNodeId);
@@ -136,7 +136,7 @@ void dijkstraMain(const Graph *graph, const string& initialNodeName, const strin
 
 void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
     int data[3];
-    MPI_Bcast(&data, 3, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&data, 3, MPI_INT, rootId, MPI_COMM_WORLD);
 
     int nodesCount = data[0];
     int initialNode = data[1];
@@ -150,7 +150,7 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
     for(int i = 0; i < nodesCount; ++i) {
         graphWeights[i].resize(nodesCount);
 
-        MPI_Bcast((int*)&graphWeights[i][0], nodesCount, MPI_INT, rootID, MPI_COMM_WORLD);
+        MPI_Bcast((int*)&graphWeights[i][0], nodesCount, MPI_INT, rootId, MPI_COMM_WORLD);
     }
 
     const pair<int, int> nodeRangePair = calculateNodeRange(nodesCount, mpiNodesCount, mpiNodeId);
@@ -159,7 +159,7 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
     cout << "mpiID=" << mpiNodeId << " from=" << fromNode << " to=" << toNode << endl;
 
     while(true) {
-        MPI_Bcast(&data, 2, MPI_INT, rootID, MPI_COMM_WORLD);
+        MPI_Bcast(&data, 2, MPI_INT, rootId, MPI_COMM_WORLD);
 
         int currentNode = data[0];
         distances[currentNode] = data[1];
@@ -187,11 +187,11 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
         }
 
         setOfVisitedNodes.insert(currentNode);
-        MPI_Send(&distances[fromNode], toNode - fromNode + 1, MPI_INT, rootID, 0, MPI_COMM_WORLD);
+        MPI_Send(&distances[fromNode], toNode - fromNode + 1, MPI_INT, rootId, 0, MPI_COMM_WORLD);
 
         // goal node found
         if (currentNode == goalNode) {
-            MPI_Send(&prevNodes[fromNode], toNode - fromNode + 1, MPI_INT, rootID, 0, MPI_COMM_WORLD);
+            MPI_Send(&prevNodes[fromNode], toNode - fromNode + 1, MPI_INT, rootId, 0, MPI_COMM_WORLD);
             return;
         }
     }
