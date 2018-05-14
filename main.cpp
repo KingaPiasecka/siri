@@ -18,12 +18,10 @@ int main(int argc, char* argv[]) {
         Graph *graph = Graph::mapGraphFromFile(argv[1]);
        
 		dijkstraMain(graph, *graph->getNodes().begin(), *(graph->getNodes().end() - 1), mpiNodesCount);
-    }
-	else {
+    } else {
 		dijkstraNode(mpiNodeId, mpiNodesCount);
 	}
-
-
+	
     MPI_Finalize();
 
     return 0;

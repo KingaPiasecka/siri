@@ -11,19 +11,18 @@
 const int MAX_INT = 2147483647;
 const int rootID = 0;
 
-std::pair<int, int> getMpiWorkerNodeRanges(int nodesCount, int mpiNodesCount, int mpiNodeId) {
-    mpiNodesCount -= 1; // counting only worker nodes
+std::pair<int, int> calculateNodeRange(int nodesCount, int mpiNodesCount, int mpiNodeId) {
+    mpiNodesCount -= 1;
     int fromNode = (nodesCount / mpiNodesCount) * (mpiNodeId - 1);
     int toNode = (nodesCount / mpiNodesCount) * mpiNodeId - 1;
-    int restNodes = nodesCount % mpiNodesCount;
+    int otherNodesCount = nodesCount % mpiNodesCount;
 
-    if (mpiNodeId - 1 < restNodes) {
+    if (mpiNodeId - 1 < otherNodesCount) {
         fromNode += mpiNodeId - 1;
         toNode += mpiNodeId;
-    }
-    else {
-        fromNode += restNodes;
-        toNode += restNodes;
+    } else {
+        fromNode += otherNodesCount;
+        toNode += otherNodesCount;
     }
 
     return std::pair<int, int>(fromNode, toNode);
@@ -50,7 +49,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
 	std::vector<int> distances(nodesCount, MAX_INT);
 	std::vector<int> prevNodes(nodesCount, MAX_INT);
 
-    std::set<int> visited;
+    std::set<int> setOfVisitedNodes;
 
 
     auto initialNode = static_cast<int>(getNodeIndex(nodes, initialNodeName));
@@ -75,7 +74,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
 
         //Get distances calculated by workers
         for(int mpiNodeId = 1; mpiNodeId < mpiNodesCount; ++mpiNodeId) {
-            const std::pair<int, int> nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
+            const std::pair<int, int> nodeRanges = calculateNodeRange(nodesCount, mpiNodesCount, mpiNodeId);
 			const int fromNode = nodeRanges.first;
 			const int toNode = nodeRanges.second;
 
@@ -85,7 +84,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
         // test for goal
         if (currentNode == goalNode) {
             for(int mpiNodeId = 1; mpiNodeId < mpiNodesCount; ++mpiNodeId) {
-                const std::pair<int, int> nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
+                const std::pair<int, int> nodeRanges = calculateNodeRange(nodesCount, mpiNodesCount, mpiNodeId);
                 const int fromNode = nodeRanges.first;
                 const int toNode = nodeRanges.second; 
                 MPI_Recv(&prevNodes[fromNode], toNode - fromNode + 1, MPI_INT, mpiNodeId, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -117,7 +116,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
             break;
         }
 
-        visited.insert(currentNode);
+        setOfVisitedNodes.insert(currentNode);
 
         auto minCost = MAX_INT; 
         auto nextNode = -1;
@@ -125,7 +124,7 @@ void dijkstraMain(const Graph *graph, const std::string& initialNodeName, const 
         for(int node = 0; node < nodesCount; ++node) {
             int totalCost = distances[node];
 
-            if (!isNodeVisited(visited, node) && totalCost < minCost) {
+            if (!isNodeVisited(setOfVisitedNodes, node) && totalCost < minCost) {
                 minCost = totalCost;
                 nextNode = node;
             }
@@ -154,9 +153,9 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
         MPI_Bcast((int*)&weights[i][0], nodesCount, MPI_INT, rootID, MPI_COMM_WORLD);
     }
 
-    const std::pair<int, int> nodeRanges = getMpiWorkerNodeRanges(nodesCount, mpiNodesCount, mpiNodeId);
-    const int fromNode = nodeRanges.first;
-    const int toNode = nodeRanges.second;
+    const std::pair<int, int> nodeRangePair = calculateNodeRange(nodesCount, mpiNodesCount, mpiNodeId);
+    const int fromNode = nodeRangePair.first;
+    const int toNode = nodeRangePair.second;
     std::cout << "mpiID=" << mpiNodeId << " from=" << fromNode << " to=" << toNode << std::endl;
 
     // real work
@@ -171,7 +170,7 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
         if (currentNode == -1)
             return;
 
-        for (auto node=fromNode; node<=toNode; ++node) {
+        for (int node = fromNode; node <= toNode; ++node) {
             if (isNodeVisited(visited, node)) {
                 continue;
             }
