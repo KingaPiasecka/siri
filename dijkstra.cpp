@@ -123,6 +123,7 @@ void dijkstraMain(const Graph *graph, const string& initialNodeName, const strin
             if (!isNodeVisited(setOfVisitedNodes, node) && totalCost < minCost) {
                 minCost = totalCost;
                 nextNode = node;
+				cout << "testtttttttttttttttttttttt" << endl;
             }
         } 
         currentNode = nextNode;
