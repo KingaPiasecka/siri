@@ -30,7 +30,6 @@ pair<int, int> calculateNodeRange(int nodesCount, int mpiNodesCount, int mpiNode
     return pair<int, int>(fromNode, toNode);
 }
 
-
 int getNodeIndex(vector<string> nodes, string nodeName) {
 	return find(nodes.begin(), nodes.end(), nodeName) - nodes.begin();
 }
@@ -55,10 +54,7 @@ void dijkstraMain(const Graph *graph, const string& initialNodeName, const strin
 
     set<int> setOfVisitedNodes;
 
-
     int currentNode = initialNode;
-
-
 
     cout << "Sending initial data to workers..." << endl;
     int buffer[3] = {nodesCount, initialNode, goalNode};
@@ -133,7 +129,6 @@ void dijkstraMain(const Graph *graph, const string& initialNodeName, const strin
     }
 }
 
-
 void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
     int buffer[3];
     MPI_Bcast(&buffer, 3, MPI_INT, rootId, MPI_COMM_WORLD);
@@ -189,7 +184,6 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
         setOfVisitedNodes.insert(currentNode);
         MPI_Send(&vectorOfDistancesToEachNode[fromNode], toNode - fromNode + 1, MPI_INT, rootId, 0, MPI_COMM_WORLD);
 
-        // goal node found
         if (currentNode == goalNode) {
             MPI_Send(&vectorOfPreviousVisitedNodes[fromNode], toNode - fromNode + 1, MPI_INT, rootId, 0, MPI_COMM_WORLD);
             return;
