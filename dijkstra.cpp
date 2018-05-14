@@ -47,6 +47,8 @@ void dijkstraMain(const Graph *graph, const string& initialNodeName, const strin
     const intVectors graphWeights = graph->getWeights();
     const vector<string> vectorOfNodes = graph->getNodes();
     const int nodesCount = vectorOfNodes.size();
+	const int initialNode = getNodeIndex(vectorOfNodes, initialNodeName);
+	const int goalNode = getNodeIndex(vectorOfNodes, goalNodeName);
 
 	vector<int> vectorOfDistancesToEachNode(nodesCount, MAX_INT);
 	vector<int> vectorOfPreviousVisitedNodes(nodesCount, MAX_INT);
@@ -54,15 +56,13 @@ void dijkstraMain(const Graph *graph, const string& initialNodeName, const strin
     set<int> setOfVisitedNodes;
 
 
-	int initialNode = getNodeIndex(vectorOfNodes, initialNodeName);
     int currentNode = initialNode;
-    int goalNode = getNodeIndex(vectorOfNodes, goalNodeName);
 
-    int workerNodes = mpiNodesCount - 1;
+
 
     cout << "Sending initial data to workers..." << endl;
-    int data[3] = {nodesCount, initialNode, goalNode};
-    MPI_Bcast(&data, 3, MPI_INT, rootId, MPI_COMM_WORLD);
+    int buffer[3] = {nodesCount, initialNode, goalNode};
+    MPI_Bcast(&buffer, 3, MPI_INT, rootId, MPI_COMM_WORLD);
 
     for(int i = 0; i < nodesCount; ++i)
         MPI_Bcast((int*)&graphWeights[i][0], nodesCount, MPI_INT, rootId, MPI_COMM_WORLD);
@@ -71,8 +71,8 @@ void dijkstraMain(const Graph *graph, const string& initialNodeName, const strin
 
     while(true) {
         cout << "Sending currNode=" << currentNode << " distance=" << vectorOfDistancesToEachNode[currentNode] << endl;
-        int data[2] = {currentNode, vectorOfDistancesToEachNode[currentNode]};
-        MPI_Bcast(&data, 2, MPI_INT, rootId, MPI_COMM_WORLD);
+        int buffer[2] = {currentNode, vectorOfDistancesToEachNode[currentNode]};
+        MPI_Bcast(&buffer, 2, MPI_INT, rootId, MPI_COMM_WORLD);
 
         for(int mpiNodeId = 1; mpiNodeId < mpiNodesCount; ++mpiNodeId) {
             const pair<int, int> nodeRanges = calculateNodeRange(nodesCount, mpiNodesCount, mpiNodeId);
@@ -135,16 +135,16 @@ void dijkstraMain(const Graph *graph, const string& initialNodeName, const strin
 
 
 void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
-    int data[3];
-    MPI_Bcast(&data, 3, MPI_INT, rootId, MPI_COMM_WORLD);
+    int buffer[3];
+    MPI_Bcast(&buffer, 3, MPI_INT, rootId, MPI_COMM_WORLD);
 
-    int nodesCount = data[0];
-    int initialNode = data[1];
-    int goalNode = data[2];
+    int nodesCount = buffer[0];
+    int initialNode = buffer[1];
+    int goalNode = buffer[2];
 
 	intVectors graphWeights(nodesCount);
-    vector<int> distances(nodesCount, MAX_INT);
-    vector<int> prevNodes(nodesCount, MAX_INT);
+    vector<int> vectorOfDistancesToEachNode(nodesCount, MAX_INT);
+    vector<int> vectorOfPreviousVisitedNodes(nodesCount, MAX_INT);
     set<int> setOfVisitedNodes;
 
     for(int i = 0; i < nodesCount; ++i) {
@@ -159,11 +159,11 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
     cout << "mpiID=" << mpiNodeId << " from=" << fromNode << " to=" << toNode << endl;
 
     while(true) {
-        MPI_Bcast(&data, 2, MPI_INT, rootId, MPI_COMM_WORLD);
+        MPI_Bcast(&buffer, 2, MPI_INT, rootId, MPI_COMM_WORLD);
 
-        int currentNode = data[0];
-        distances[currentNode] = data[1];
-        cout << "mpiId=" << mpiNodeId << " bcast recv currNode=" << currentNode << " dist=" << distances[currentNode] << endl;
+        int currentNode = buffer[0];
+        vectorOfDistancesToEachNode[currentNode] = buffer[1];
+        cout << "mpiId=" << mpiNodeId << " bcast recv currNode=" << currentNode << " dist=" << vectorOfDistancesToEachNode[currentNode] << endl;
 
         if (currentNode == -1)
             return;
@@ -175,23 +175,23 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
 
             if (isCurrentNodeNeighbour(graphWeights, currentNode, node)) {
                 int nodeDistance = graphWeights[currentNode][node];
-                int totalCostToNode = distances[currentNode] + nodeDistance;
+                int totalCostToNode = vectorOfDistancesToEachNode[currentNode] + nodeDistance;
 
 				cout << "Node " << node << " is neighbour of " << currentNode << " (distance: " << nodeDistance << ", totalCostToNode: " << totalCostToNode << ")";
-                if (totalCostToNode < distances[node]) {
-                    distances[node] = totalCostToNode;
-                    prevNodes[node] = currentNode;
+                if (totalCostToNode < vectorOfDistancesToEachNode[node]) {
+                    vectorOfDistancesToEachNode[node] = totalCostToNode;
+                    vectorOfPreviousVisitedNodes[node] = currentNode;
 					cout << "New total cost is less than the old, replacing";
                 }
             }
         }
 
         setOfVisitedNodes.insert(currentNode);
-        MPI_Send(&distances[fromNode], toNode - fromNode + 1, MPI_INT, rootId, 0, MPI_COMM_WORLD);
+        MPI_Send(&vectorOfDistancesToEachNode[fromNode], toNode - fromNode + 1, MPI_INT, rootId, 0, MPI_COMM_WORLD);
 
         // goal node found
         if (currentNode == goalNode) {
-            MPI_Send(&prevNodes[fromNode], toNode - fromNode + 1, MPI_INT, rootId, 0, MPI_COMM_WORLD);
+            MPI_Send(&vectorOfPreviousVisitedNodes[fromNode], toNode - fromNode + 1, MPI_INT, rootId, 0, MPI_COMM_WORLD);
             return;
         }
     }
