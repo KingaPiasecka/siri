@@ -56,7 +56,6 @@ void dijkstraMain(const Graph *graph, const string& initialNodeName, const strin
 
     int currentNode = initialNode;
 
-    cout << "Sending initial data to workers..." << endl;
     int buffer[3] = {nodesCount, initialNode, goalNode};
     MPI_Bcast(&buffer, 3, MPI_INT, rootId, MPI_COMM_WORLD);
 
@@ -66,7 +65,6 @@ void dijkstraMain(const Graph *graph, const string& initialNodeName, const strin
     vectorOfDistancesToEachNode[initialNode] = 0;
 
     while(true) {
-        cout << "Sending currNode=" << currentNode << " distance=" << vectorOfDistancesToEachNode[currentNode] << endl;
         int buffer[2] = {currentNode, vectorOfDistancesToEachNode[currentNode]};
         MPI_Bcast(&buffer, 2, MPI_INT, rootId, MPI_COMM_WORLD);
 
@@ -123,7 +121,6 @@ void dijkstraMain(const Graph *graph, const string& initialNodeName, const strin
             if (!isNodeVisited(setOfVisitedNodes, node) && totalCost < minCost) {
                 minCost = totalCost;
                 nextNode = node;
-				cout << "testtttttttttttttttttttttt" << endl;
             }
         } 
         currentNode = nextNode;
@@ -152,14 +149,12 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
     const pair<int, int> nodeRangePair = calculateNodeRange(nodesCount, mpiNodesCount, mpiNodeId);
     const int fromNode = nodeRangePair.first;
     const int toNode = nodeRangePair.second;
-    cout << "mpiID=" << mpiNodeId << " from=" << fromNode << " to=" << toNode << endl;
 
     while(true) {
         MPI_Bcast(&buffer, 2, MPI_INT, rootId, MPI_COMM_WORLD);
 
         int currentNode = buffer[0];
         vectorOfDistancesToEachNode[currentNode] = buffer[1];
-        cout << "mpiId=" << mpiNodeId << " bcast recv currNode=" << currentNode << " dist=" << vectorOfDistancesToEachNode[currentNode] << endl;
 
         if (currentNode == -1)
             return;
@@ -173,11 +168,9 @@ void dijkstraNode(int mpiNodeId, int mpiNodesCount) {
                 int nodeDistance = graphWeights[currentNode][node];
                 int totalCostToNode = vectorOfDistancesToEachNode[currentNode] + nodeDistance;
 
-				cout << "Node " << node << " is neighbour of " << currentNode << " (distance: " << nodeDistance << ", totalCostToNode: " << totalCostToNode << ")";
                 if (totalCostToNode < vectorOfDistancesToEachNode[node]) {
                     vectorOfDistancesToEachNode[node] = totalCostToNode;
                     vectorOfPreviousVisitedNodes[node] = currentNode;
-					cout << "New total cost is less than the old, replacing";
                 }
             }
         }
