@@ -68,7 +68,6 @@ void Graph::setNodes(int numberOfVertices) {
 	int A = (int)'A';
 	for(int i=0; i<numberOfVertices; ++i) {
 		int node = A + i;
-		cout << "Adding node: " << (char)node << endl;
 		this->nodes.push_back(string(1,(char)node));
 	}
 }
